@@ -9,7 +9,7 @@
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
-    const socket = io(); // Make sure this runs after the script above is loaded
+    const socket = io("https://streaming-app-b1ij.onrender.com"); // Make sure this runs after the script above is loaded
     console.log("Receiver JS running"); // Add this for debugging
   
     const peerConnection = new RTCPeerConnection();
