@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Sender</title>
+</head>
+<body>
+  <h1>Sender</h1>
+  <video id="localVideo" autoplay muted playsinline></video>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const localVideo = document.getElementById('localVideo');
+    const peerConnection = new RTCPeerConnection();
+
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+      .then(stream => {
+        localVideo.srcObject = stream;
+        stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
+
+        return peerConnection.createOffer();
+      })
+      .then(offer => {
+        return peerConnection.setLocalDescription(offer).then(() => {
+          socket.emit('offer', offer);
+        });
+      });
+
+    socket.on('answer', answer => {
+      peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+    });
+
+    peerConnection.onicecandidate = event => {
+      if (event.candidate) {
+        socket.emit('ice-candidate', event.candidate);
+      }
+    };
+
+    socket.on('ice-candidate', candidate => {
+      peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+    });
+  </script>
+</body>
+</html>
